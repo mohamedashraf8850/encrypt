@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:clock/clock.dart';
 import 'dart:io';
 
 import 'package:encrypt/encrypt.dart';
@@ -9,27 +8,6 @@ import 'package:test/test.dart';
 void main() {
   const text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
   final key = Key.fromUtf8('my32lengthsupersecretnooneknows1');
-
-  group('Fernet', () {
-    final currentDateTime =
-        DateTime.fromMillisecondsSinceEpoch(1565106118 * 1000);
-    final b64key = Key.fromUtf8(base64Url.encode(key.bytes));
-    final fernet = Fernet(b64key, clock: Clock.fixed(currentDateTime));
-    final encrypter = Encrypter(fernet);
-    final encrypted = Encrypted(base64.decode(
-        'gAAAAABdSZ_GAAAAAAAAAAAAAAAAAAAAAP-kE5Zs_CyDB-8I8c26Iz9B78L6hleGlXZmqEjZh107U3ny9yRp8QUAc243_B7q0ZtFFs0xAoJDveTPXwTwvzCwXEd8I9NZ1fZeknZmJkEPRxEsJBh9K5QrqjR8B0Shyg=='));
-    final iv = IV.fromLength(16);
-    test('encrypt', () {
-      expect(encrypter.encrypt(text, iv: iv), equals(encrypted));
-      // iv will be generated if not provided
-      final encryptedAgain = encrypter.encrypt(text);
-      expect(encrypter.decrypt(encryptedAgain), equals(text));
-    });
-    test('decrypt', () {
-      expect(encrypter.decrypt(encrypted), equals(text));
-      expect(fernet.extractTimestamp(encrypted.bytes), equals(1565106118));
-    });
-  });
 
   group('AES', () {
     const <AESMode, String>{
@@ -119,19 +97,18 @@ void main() {
 
   group('RSA', () {
     final parser = RSAKeyParser();
+
     final RSAPublicKey publicKey = parser
         .parse(File('test/public.pem').readAsStringSync()) as RSAPublicKey;
     final RSAPrivateKey privateKey = parser
         .parse(File('test/private.pem').readAsStringSync()) as RSAPrivateKey;
 
-    RSAEncoding.values.forEach((encoding) {
-      final encrypter = Encrypter(RSA(
-          publicKey: publicKey, privateKey: privateKey, encoding: encoding));
-      final encrypted = encrypter.encrypt(text);
+    final encrypter =
+        Encrypter(RSA(publicKey: publicKey, privateKey: privateKey));
+    final encrypted = encrypter.encrypt(text);
 
-      test('encrypt/decrypt $encoding', () {
-        expect(encrypter.decrypt(encrypted), equals(text));
-      });
+    test('encrypt/decrypt', () {
+      expect(encrypter.decrypt(encrypted), equals(text));
     });
 
     group('StateError', () {
@@ -142,7 +119,6 @@ void main() {
       });
 
       test('decrypt', () {
-        final encrypted = Encrypted.fromLength(0);
         expect(() => badStateEncrypter.decrypt(encrypted), throwsStateError);
       });
     });
