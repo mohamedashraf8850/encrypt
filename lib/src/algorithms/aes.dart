@@ -2,12 +2,12 @@ part of encrypt;
 
 /// Wraps the AES Algorithm.
 class AES implements Algorithm {
-  final Key key;
+  final Keyo keyo;
   final AESMode mode;
   final String padding;
   final BlockCipher _cipher;
 
-  AES(this.key, {this.mode = AESMode.sic, this.padding = 'PKCS7'})
+  AES(this.keyo, {this.mode = AESMode.sic, this.padding = 'PKCS7'})
       : _cipher = padding != null
             ? PaddedBlockCipher('AES/${_modes[mode]}/$padding')
             : BlockCipher('AES/${_modes[mode]}');
@@ -54,19 +54,19 @@ class AES implements Algorithm {
     }
 
     if (mode == AESMode.ecb) {
-      return KeyParameter(key.bytes);
+      return KeyParameter(keyo.bytes);
     }
 
-    return ParametersWithIV<KeyParameter>(KeyParameter(key.bytes), iv.bytes);
+    return ParametersWithIV<KeyParameter>(KeyParameter(keyo.bytes), iv.bytes);
   }
 
   PaddedBlockCipherParameters _paddedParams(IV iv) {
     if (mode == AESMode.ecb) {
-      return PaddedBlockCipherParameters(KeyParameter(key.bytes), null);
+      return PaddedBlockCipherParameters(KeyParameter(keyo.bytes), null);
     }
 
     return PaddedBlockCipherParameters(
-        ParametersWithIV<KeyParameter>(KeyParameter(key.bytes), iv.bytes),
+        ParametersWithIV<KeyParameter>(KeyParameter(keyo.bytes), iv.bytes),
         null);
   }
 }
