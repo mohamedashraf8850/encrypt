@@ -84,7 +84,7 @@ $ secure-random --help
 Current status is:
 
 - AES with PKCS7 padding
-- RSA with PKCS1 and OAEP encoding
+- RSA with PKCS1 encoding
 - Salsa20
 
 ## Usage
@@ -149,31 +149,6 @@ void main() {
 }
 ```
 
-#### [Fernet](https://github.com/fernet/spec/blob/master/Spec.md)
-
-```dart
-import 'package:encrypt/encrypt.dart';
-import 'dart:convert';
-
-void main() {
-  final plainText = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
-  final key = Key.fromUtf8('my32lengthsupersecretnooneknows1');
-  final iv = IV.fromLength(16);
-
-  final b64key = Key.fromUtf8(base64Url.encode(key.bytes));
-  // if you need to use the ttl feature, you'll need to use APIs in the algorithm itself
-  final fernet = Fernet(b64key);
-  final encrypter = Encrypter(fernet);
-
-  final encrypted = encrypter.encrypt(plainText);
-  final decrypted = encrypter.decrypt(encrypted);
-
-  print(decrypted); // Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  print(encrypted.base64); // random cipher text
-  print(fernet.extractTimestamp(encrypted.bytes)); // unix timestamp
-}
-```
-
 ### Asymmetric
 
 #### RSA
@@ -184,17 +159,21 @@ import 'package:encrypt/encrypt.dart';
 import 'package:pointycastle/asymmetric/api.dart';
 
 void main() {
-  final publicKey = await parseKeyFromFile<RSAPublicKey>('test/public.pem');
-  final privKey = await parseKeyFromFile<RSAPrivateKey>('test/private.pem');
+  final publicKeyFile = File('/path/to/public_key.pem');
+  final privateKeyFile = File('/path/to/private_key.pem');
+
+  final parser = RSAKeyParser();
+  final RSAPublicKey publicKey = parser.parse(publicKeyFile.readAsStringSync());
+  final RSAPrivateKey privateKey = parser.parse(privateKeyFile.readAsStringSync());
 
   final plainText = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
-  final encrypter = Encrypter(RSA(publicKey: publicKey, privateKey: privKey));
+  final encrypter = Encrypter(RSA(publicKey: publicKey, privateKey: privateKey));
 
   final encrypted = encrypter.encrypt(plainText);
   final decrypted = encrypter.decrypt(encrypted);
 
   print(decrypted); // Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  print(encrypted.base64); // kO9EbgbrSwiq0EYz0aBdljHSC/rci2854Qa+nugbhKjidlezNplsEqOxR+pr1RtICZGAtv0YGevJBaRaHS17eHuj7GXo1CM3PR6pjGxrorcwR5Q7/bVEePESsimMbhHWF+AkDIX4v0CwKx9lgaTBgC8/yJKiLmQkyDCj64J3JSE=
+  print(encrypted.base64); // XWMuHTeO86gC6SsUh14h+jc4iQW7Vy0TDaBKN926QWhg5c3KKoSuF+6uedLWBEis0LYgTON2rhtTOjmb6bU2P27lgf+5JKdLGKqri2F4sCS3+/p/EPb41f60vnr3whX2o5VRJhJagxtrq0V3eu3X4UeRiO2y7yOt6MXyJxMFcXs=
 }
 ```
 

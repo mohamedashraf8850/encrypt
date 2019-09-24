@@ -1,13 +1,3 @@
-# 3.3.1
-
-- Move I/O helper to another lib
-
-# 3.3.0
-
-- Added the Fernet algorithm, thanks to [@timfeirg](https://github.com/timfeirg)
-- Moved the secure random logic to the lib
-- Added key stretching
-
 # 3.2.0
 
 - Fix wrong casting.
