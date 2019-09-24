@@ -45,15 +45,6 @@ class Encrypted {
 
     return false;
   }
-
-  /// Populated by underlying algorithms
-  Map _meta;
-  void set meta(Map m) {
-    if (_meta != null) {
-      throw UnsupportedError('Cannot modify meta once initialized');
-    }
-    _meta = Map.unmodifiable(m);
-  }
 }
 
 /// Represents an Initialization Vector.
@@ -63,27 +54,13 @@ class IV extends Encrypted {
   IV.fromBase64(String encoded) : super.fromBase64(encoded);
   IV.fromUtf8(String input) : super.fromUtf8(input);
   IV.fromLength(int length) : super.fromLength(length);
-  IV.fromSecureRandom(int length) : super(SecureRandom(length).bytes);
 }
 
 /// Represents an Encryption Key.
-class Key extends Encrypted {
-  Key(Uint8List bytes) : super(bytes);
-  Key.fromBase16(String encoded) : super.fromBase16(encoded);
-  Key.fromBase64(String encoded) : super.fromBase64(encoded);
-  Key.fromUtf8(String input) : super.fromUtf8(input);
-  Key.fromLength(int length) : super.fromLength(length);
-  Key.fromSecureRandom(int length) : super(SecureRandom(length).bytes);
-
-  Key stretch(int desiredKeyLength,
-      {int iterationCount = 100, Uint8List salt}) {
-    if (salt == null) {
-      salt = SecureRandom(desiredKeyLength).bytes;
-    }
-
-    final params = Pbkdf2Parameters(salt, iterationCount, desiredKeyLength);
-    final pbkdf2 = PBKDF2KeyDerivator(Mac('SHA-1/HMAC'))..init(params);
-
-    return Key(pbkdf2.process(_bytes));
-  }
+class Keyo extends Encrypted {
+  Keyo(Uint8List bytes) : super(bytes);
+  Keyo.fromBase16(String encoded) : super.fromBase16(encoded);
+  Keyo.fromBase64(String encoded) : super.fromBase64(encoded);
+  Keyo.fromUtf8(String input) : super.fromUtf8(input);
+  Keyo.fromLength(int length) : super.fromLength(length);
 }
